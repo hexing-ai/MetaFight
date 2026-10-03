@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>MetaFight · 货轮交锋</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <img id="materialAtlas" class="hidden" src="./assets/ship-materials.jpg" alt="" aria-hidden="true">
+  <div id="viewportFrame">
+  <main id="app">
+    <canvas id="screen" aria-label="货轮战斗场景"></canvas>
+    <section id="play" class="hidden" aria-label="战斗操作区">
+      <div id="markers" aria-hidden="true"></div>
+      <div id="damageDirection" class="damage-direction hidden" aria-hidden="true"><span>▲</span></div>
+      <div id="combatNotice" class="combat-notice" role="status"></div>
+      <header class="battle-hud"><div class="battle-brand">MetaFight<small>货轮交锋</small></div><div class="battle-score"><div><span class="friendly">我方 <b id="redScore">0</b></span><i>:</i><span class="enemy"><b id="blueScore">0</b> 敌方</span></div><small><b id="timer">5:00</b><span>目标 50</span></small></div><button id="pause">Ⅱ 暂停</button></header>
+      <span id="ammo" class="hidden"></span><span id="matchHud" class="hidden"></span>
+      <div id="reticle" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+      <div id="moveZone" class="move-zone"><span>移动</span><i id="stick"></i></div>
+      <div class="look-hint">右侧滑动转向</div>
+      <button id="reload" class="reload">换弹</button><button id="jump" class="jump">跳跃</button><button id="fire" class="fire">开火<span>按住并拖动可转向</span></button>
+      <div id="liveStatus" class="live-status" aria-live="polite"></div>
+      <div class="health-readout"><b id="hpValue">100</b><div><i id="hpFill"></i></div></div>
+      <div class="weapon-readout"><b id="rounds">30</b><span>/ 30</span><i>∞</i></div>
+      <div id="weaponStatus" class="weapon-status"></div><div class="reload-progress"><i id="reloadProgress"></i></div>
+    </section>
+    <section id="panel" class="panel cover">
+      <img class="cover-art" src="./assets/cover-daylight.jpg" alt="晴昼货轮、集装箱与战术队员">
+      <div class="cover-shade"></div>
+      <div class="identity"><span>MetaFight</span><small>M3-D / 稳定性测试</small></div>
+      <div class="panel-body">
+        <div class="intro"><p class="eyebrow">货轮交锋 · 团队对抗</p><h1 id="heading"><em>METAFIGHT</em><span>货轮交锋</span></h1><p id="message">4 对 4 团队对抗 · 50 分获胜 · 5 分钟一局</p><p id="rotate" class="notice hidden">点击开始后，横握手机进入战斗。</p><p id="displayHint" class="notice hidden">手机顶部朝左横放；不玩时请点暂停。</p><button id="displayMode" class="secondary hidden">开启横向显示</button><button id="start" class="primary" disabled>正在读取设置…</button><button id="reset" class="secondary hidden">重新开始</button><button id="leave" class="secondary hidden">退出本局</button><div class="cover-links"><button id="settingsOpen">设置与说明</button><button id="quickGuide">操作指南</button></div></div>
+        <div id="settingsPanel" class="controls hidden" role="dialog" aria-label="设置与说明"><header class="settings-heading"><h2>设置与说明</h2><button id="settingsClose">返回</button></header><label for="fixture">对局人数</label><select id="fixture"><option value="match">团队对抗 · 4对4</option><option value="match-12">开发候选 · 6对6</option></select><label for="quality">画质</label><select id="quality"><option value="low">低 · 流畅优先</option><option value="medium">中 · 更清晰</option></select><p id="qualityStatus" class="status"></p><label for="sensitivity">转向灵敏度 <output id="sensitivityValue">1.0</output></label><input id="sensitivity" type="range" min="0.25" max="3" step="0.25" value="1" disabled><label for="volume">音量</label><input id="volume" type="range" min="0" max="1" step="0.05" value="0.35"><label><input id="assist" type="checkbox" checked> 瞄准减速辅助</label><button id="save" disabled>保存设置</button><button id="defaults">恢复默认</button><p id="storageStatus" class="status" aria-live="polite">正在连接本地设置</p><button id="sound" disabled>试听声音</button><p id="audioStatus" class="status">开始后启用声音，可将音量设为0静音</p>      <section id="performanceControls" class="performance-controls" aria-label="性能测试"><h2>性能测试</h2><p id="performanceStatus">开始记录后正常游玩，可跨局累计；关闭页面前停止并截图。</p><button id="performanceStart">开始新记录</button><button id="performanceStop">停止并查看</button><button id="performanceView">查看性能摘要</button></section><div class="links"><button id="guideOpen">操作指南</button><button id="diagnostics">查看测试记录</button><button id="license">开源许可</button></div></div>
+      </div>
+
+      <footer><span id="channel">正在识别运行环境</span><span id="build"></span></footer>
+    </section>
+    <section id="preparing" class="preparing hidden" aria-live="polite"><div class="prepare-phone" aria-hidden="true">↶</div><p id="prepareHint">手机顶部朝左，横握进入战斗</p><strong id="prepareCount">3</strong><small>左侧移动 · 右侧瞄准 · 按住开火</small><button id="cancelPrepare">返回首页</button></section>
+    <section id="result" class="result hidden" aria-label="对局结算">
+      <header class="result-heading"><div><p class="eyebrow">货轮交锋 · 本局战绩</p><h1 id="resultTitle">对局结束</h1></div><strong id="resultScore"></strong></header>
+      <p id="resultSummary"></p><div id="scoreboard" class="scoreboard"></div>
+      <footer class="result-actions"><button id="again" class="primary">再来一局</button><button id="home">返回首页</button></footer>
+    </section>
+    <section id="guide" class="guide hidden" role="dialog" aria-modal="true" aria-labelledby="guideTitle">
+      <div class="guide-card"><header><span id="guideCount"></span><button id="guideSkip">跳过引导</button></header><div class="guide-content"><div id="guideSymbol" aria-hidden="true"></div><div><h2 id="guideTitle"></h2><p id="guideBody"></p><small id="guideHint"></small></div></div><footer><button id="guideBack">上一步</button><button id="guideNext" class="primary">下一步</button></footer></div>
+    </section>
+    <section id="details" class="details hidden" aria-label="测试记录与许可">
+      <div class="details-heading"><h2 id="detailsTitle">测试记录</h2><button id="closeDetails">返回</button></div>
+      <pre id="detailsText"></pre><div class="pages"><button id="previous">上一页</button><span id="pageNumber"></span><button id="next">下一页</button></div>
+    </section>
+  </main>
+  </div>
+  <button id="recoverDisplay" class="hidden" aria-label="恢复竖向菜单">恢复显示</button>
+  <script src="./app.js"></script>
+</body>
+</html>

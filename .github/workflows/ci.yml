@@ -1,0 +1,22 @@
+name: Verify web source
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run verify
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web-candidate
+          path: |
+            dist/release/web
+            artifacts/release-web-build-report.json
+          retention-days: 14

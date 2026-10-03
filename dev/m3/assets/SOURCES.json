@@ -1,0 +1,25 @@
+{
+  "tool": "built-in imagegen",
+  "date": "2026-10-03",
+  "assets": [
+    {
+      "file": "cover-daylight.jpg",
+      "usage": "Portrait menu illustration; not a gameplay screenshot",
+      "prompt": "Use case: stylized-concept. Asset type: finished portrait 2:3 mobile game cover illustration, image only, no lettering or UI. Original MetaFight cargo ship military training arena at bright clear midday. Believable detailed weathered teal blue shipping containers and one oxidized red container form strong perspective down a steel ship deck towards a white navigation bridge with dark glass windows, railings, antennas, life rings and distant blue ocean. Foreground lower right: one original modern tactical soldier seen from rear three-quarter, wearing olive textile combat uniform, dark plate carrier, helmet and gloves, holding a realistic generic compact rifle pointed down. Character occupies lower right third; clear sky and bridge in upper 40 percent reserved for later HTML title, dark steel deck lower 20 percent reserved for later button. Physically believable proportions, realistic high-end video game promotional 3D render, sunlight, ambient occlusion, steel panel seams, locks and corrugation, natural shadow depth, sophisticated restrained navy / sea blue / rust red / ivory palette. No logos, no text, no watermark, no HUD, no borders, no collage, no explosions, no gore. Vertical composition.",
+      "generation": "exec-e138f72a-ffb8-43b6-b30e-50039fde29d0",
+      "processing": "JPEG encoding, long edge 1280, quality 78",
+      "bytes": 314791,
+      "sha256": "e40674441076a99acb47c8651a1c392919f301412c5ce0ce22beb8f04ccd184c"
+    },
+    {
+      "file": "ship-materials.jpg",
+      "usage": "Offline 2x2 albedo atlas; four 512px GPU textures",
+      "prompt": "Use case: stylized-concept. Asset type: original game material texture atlas, square 1024x1024, four equal square quadrants in an EXACT 2 by 2 grid, no borders or margins. Every quadrant is a front-on orthographic flat scan of a different realistic ship material, no perspective. TOP LEFT: off-white weathered ship paint, tiny gray scratches and subtle grime, matte metal. TOP RIGHT: faded desaturated navy teal painted steel, shallow narrow vertical corrugation, light chipped paint, subtle rust at edges. BOTTOM LEFT: oxidized red painted steel, shallow narrow vertical corrugation with slight chipped paint and subtle rusty streaks. BOTTOM RIGHT: medium blue-gray non-slip steel deck with small diagonal diamond tread pattern, subtle scuffs and wear. Neutral diffuse illumination, baked micro surface depth but no directional cast shadows, believable varied grain, game-ready albedo material sheet. No objects, no text, no labels, no letters, no watermark, no frame, no dramatic black damage. The four quadrants must each fill exactly one quarter of the image.",
+      "generation": "exec-d175dab2-349d-4391-a886-427ed508b0e1",
+      "processing": "JPEG encoding, 1024 square, quality 86",
+      "bytes": 475848,
+      "sha256": "217edd1f5866a01021fefd88df7ed7bc8e6f18d4e996f29292ebfd41ea354889"
+    }
+  ],
+  "notes": "Original generated art. No third-party game assets extracted. AI artwork may not carry exclusive copyright; code licensing is separate."
+}

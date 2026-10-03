@@ -1,0 +1,326 @@
+/* The page around the game: a black box with the picture in it, and a menu that
+   looks like the inside of the same building. Nothing here is loaded from
+   anywhere - the fonts are the ones the machine already has. */
+
+:root {
+  --ink: #e8ecef;
+  --dim: #8f9aa6;
+  --faint: #5b646e;
+  --line: rgba(255, 255, 255, 0.12);
+  --panel: rgba(14, 16, 19, 0.94);
+  --hot: #ffd166;
+  --hotink: #191510;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: #07080a;
+  color: var(--ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#app {
+  position: fixed;
+  inset: 0;
+}
+
+#screen, #hud {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Nothing on the playing surface is a gesture the browser gets to interpret.
+   Without this the first few pixels of a thumb drag arrive as pointermove and
+   then the browser decides it is a pan, sends pointercancel and keeps the rest -
+   which feels exactly like a very slow look control, because every swipe is
+   worth one step of it and then stops. preventDefault() on the move does not
+   help: touch-action is the only thing the compositor reads. */
+#app, #screen, #hud, #touch, #touchButtons, #stick {
+  touch-action: none;
+  -webkit-touch-callout: none;
+}
+
+#screen { background: #07080a; cursor: none; }
+#hud { pointer-events: none; }
+body.menu #screen { cursor: default; }
+
+/* --- Overlays --------------------------------------------------------------- */
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: radial-gradient(circle at 50% 40%, rgba(20, 24, 30, 0.72), rgba(4, 5, 7, 0.93));
+  backdrop-filter: blur(3px);
+  z-index: 10;
+  overflow: auto;
+}
+
+.overlay.hidden { display: none; }
+
+.panel {
+  width: min(760px, 100%);
+  max-height: 92vh;
+  overflow: auto;
+  padding: 26px 28px 22px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.7);
+}
+
+.panel.small { width: min(420px, 100%); text-align: center; }
+
+h1 {
+  margin: 0;
+  font-size: clamp(30px, 6vw, 48px);
+  letter-spacing: 0.14em;
+  font-weight: 700;
+}
+
+h1 span { color: var(--hot); }
+
+h2 {
+  margin: 0 0 10px;
+  font-size: 20px;
+  letter-spacing: 0.16em;
+  color: var(--hot);
+}
+
+.tag {
+  margin: 6px 0 22px;
+  color: var(--dim);
+  font-size: 12px;
+  letter-spacing: 0.03em;
+}
+
+.row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin: 12px 0 4px;
+}
+
+.row > label {
+  width: 78px;
+  flex: 0 0 78px;
+  padding-top: 7px;
+  color: var(--faint);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex: 1;
+}
+
+.stepper { align-items: center; }
+
+.stepper > button:first-child,
+.stepper > button:nth-child(3) {
+  width: 34px;
+  text-align: center;
+  font-size: 14px;
+  padding: 6px 0;
+}
+
+.stepper > span {
+  min-width: 56px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--hot);
+  font-variant-numeric: tabular-nums;
+}
+
+button {
+  font: inherit;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  padding: 7px 12px;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--line);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+
+button:hover { background: rgba(255, 255, 255, 0.13); }
+button.active { background: var(--hot); color: var(--hotink); border-color: var(--hot); }
+button:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.primary {
+  padding: 12px 30px;
+  font-size: 15px;
+  letter-spacing: 0.22em;
+  background: var(--hot);
+  color: var(--hotink);
+  border-color: var(--hot);
+}
+
+.primary:hover { background: #ffdd8a; }
+
+.panelFooter {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.panel.small button { display: block; width: 100%; margin: 8px 0 0; }
+
+.fineprint {
+  margin: 2px 0 0 92px;
+  color: var(--faint);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.status {
+  margin: 10px 0 0;
+  color: var(--dim);
+  font-size: 12px;
+}
+
+details {
+  margin-top: 18px;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+
+summary {
+  cursor: pointer;
+  color: var(--dim);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.keys { width: 100%; border-collapse: collapse; margin: 12px 0 6px; }
+.keys td { padding: 3px 4px; font-size: 12px; }
+.keys td:first-child { color: var(--faint); width: 45%; }
+.keys button { width: 100%; text-align: left; }
+
+.hints { margin: 14px 0 2px; padding-left: 18px; color: var(--dim); font-size: 12px; line-height: 1.65; }
+.hints li { margin-bottom: 7px; }
+.hints b { color: var(--ink); font-weight: 600; }
+
+input {
+  font: inherit;
+  font-size: 14px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  width: 120px;
+  padding: 7px 10px;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--line);
+}
+
+.roster { display: flex; gap: 8px; margin-top: 10px; }
+.roster span {
+  flex: 1;
+  padding: 8px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--faint);
+  border: 1px solid var(--line);
+}
+.roster span.taken { color: var(--ink); border-color: rgba(255, 209, 102, 0.5); }
+.roster span.you { color: var(--hot); border-color: var(--hot); }
+
+/* --- Thumbs ----------------------------------------------------------------- */
+
+#touch {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+}
+
+#touch.hidden { display: none; }
+
+#stick {
+  position: absolute;
+  width: 118px;
+  height: 118px;
+  margin: -59px 0 0 -59px;
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.12s;
+  pointer-events: none;
+}
+
+#stick.on { opacity: 1; }
+
+#knob {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 46px;
+  height: 46px;
+  margin: -23px 0 0 -23px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.22);
+}
+
+#touchButtons {
+  position: absolute;
+  right: max(18px, env(safe-area-inset-right));
+  bottom: max(18px, env(safe-area-inset-bottom));
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  pointer-events: auto;
+}
+
+#touchButtons button {
+  width: 76px;
+  height: 62px;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 10px;
+}
+
+#touchButtons button.big { width: 104px; height: 104px; border-radius: 52px; }
+#touchButtons button.held { background: rgba(255, 209, 102, 0.55); color: #191510; }
+
+#btnPause {
+  position: absolute;
+  top: max(12px, env(safe-area-inset-top));
+  right: max(12px, env(safe-area-inset-right));
+  width: 46px;
+  height: 38px;
+  pointer-events: auto;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+}
+
+@media (max-width: 720px) {
+  .row { flex-direction: column; gap: 6px; }
+  .row > label { width: auto; flex: none; padding-top: 0; }
+  .fineprint { margin-left: 0; }
+  .panel { padding: 18px 16px 16px; }
+}

@@ -1,0 +1,31 @@
+name: 游戏问题 / Bug report
+description: 帮助我们复现游戏或启动问题
+title: "[Bug] "
+body:
+  - type: textarea
+    id: environment
+    attributes:
+      label: 运行环境
+      description: 游戏版本、手机/电脑型号、系统、小红书或浏览器版本
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      placeholder: "1. 打开游戏
+2. 点击……
+3. 出现……"
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 预期与实际结果
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 截图或补充信息
+      description: 请移除账号、通知、位置等私人信息，不要上传密码或访问令牌。

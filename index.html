@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <title>WebReal</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#0a0b0d">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<body>
+  <div id="app">
+    <canvas id="screen"></canvas>
+    <canvas id="hud"></canvas>
+
+    <div id="touch" class="hidden">
+      <div id="stick"><div id="knob"></div></div>
+      <button id="btnPause" type="button" aria-label="Pause">II</button>
+      <div id="touchButtons">
+        <button type="button" data-touch="next" aria-label="Next weapon">WPN</button>
+        <button type="button" data-touch="jump" aria-label="Jump">JUMP</button>
+        <button type="button" data-touch="fire" class="big" aria-label="Fire">FIRE</button>
+      </div>
+    </div>
+
+    <div id="menu" class="overlay">
+      <div class="panel">
+        <h1>WEB<span>REAL</span></h1>
+        <p class="tag">HTML / JavaScript &middot; five arenas, four guns, one room with a hole in the middle of it</p>
+
+        <div class="row">
+          <label>Match</label>
+          <div class="btns">
+            <button data-mode="dm" class="active">Deathmatch</button>
+            <button data-mode="tdm">Team deathmatch</button>
+            <button data-mode="ctf">Capture the flag</button>
+          </div>
+        </div>
+        <p id="modeBlurb" class="fineprint"></p>
+
+        <div class="row">
+          <label>Rules</label>
+          <div class="btns">
+            <button data-insta="off" class="active">Normal</button>
+            <button data-insta="on">Instagib</button>
+          </div>
+        </div>
+        <p id="instaBlurb" class="fineprint"></p>
+
+        <div class="row">
+          <label>Arena</label>
+          <div class="btns" id="mapButtons"></div>
+        </div>
+        <p id="mapBlurb" class="fineprint"></p>
+
+        <div class="row">
+          <label>Bots</label>
+          <div class="btns" id="botButtons"></div>
+        </div>
+
+        <div class="row">
+          <label>Skill</label>
+          <div class="btns">
+            <button data-skill="easy">Rookie</button>
+            <button data-skill="normal" class="active">Regular</button>
+            <button data-skill="hard">Veteran</button>
+            <button data-skill="brutal">Brutal</button>
+          </div>
+        </div>
+        <p id="skillBlurb" class="fineprint"></p>
+
+        <div class="row">
+          <label>Sound</label>
+          <div class="btns">
+            <button data-sound="on" class="active">On</button>
+            <button data-sound="off">Off</button>
+          </div>
+        </div>
+
+        <div class="row">
+          <label>Announcer</label>
+          <div class="btns">
+            <button data-voice="on" class="active">On</button>
+            <button data-voice="off">Off</button>
+          </div>
+        </div>
+        <p class="fineprint">
+          He says what a tournament announcer says, and he is synthesised out of
+          three filters rather than recorded - which is why "monster kill" sounds
+          like a machine that has been asked to shout.
+        </p>
+
+        <details id="controlsBox">
+          <summary>Controls</summary>
+          <table class="keys"><tbody id="keysBody"></tbody></table>
+          <p id="bindHint" class="status">Click a key to change it.</p>
+          <div class="row">
+            <label>Presets</label>
+            <div class="btns" id="presetButtons"></div>
+          </div>
+          <div class="row">
+            <label>Mouse look</label>
+            <div class="btns stepper">
+              <button data-sens="-0.1" aria-label="Slower">&minus;</button>
+              <span id="sensValue">1.0&times;</span>
+              <button data-sens="0.1" aria-label="Faster">+</button>
+              <button data-sens="reset">Reset</button>
+            </div>
+          </div>
+          <div class="row">
+            <label>Invert Y</label>
+            <div class="btns">
+              <button data-invert="off" class="active">No</button>
+              <button data-invert="on">Yes</button>
+            </div>
+          </div>
+          <p class="fineprint">
+            For the mouse, a touchpad and the gamepad's right stick. The thumb
+            controls below have their own, because a thumb on glass is a
+            different instrument.
+          </p>
+
+          <div class="row">
+            <label>Thumb look</label>
+            <div class="btns stepper">
+              <button data-touchsens="-0.1" aria-label="Slower">&minus;</button>
+              <span id="touchSensValue">1.0&times;</span>
+              <button data-touchsens="0.1" aria-label="Faster">+</button>
+              <button data-touchsens="reset">Reset</button>
+            </div>
+          </div>
+          <div class="row">
+            <label>Thumb X</label>
+            <div class="btns">
+              <button data-tinvertx="off" class="active">Normal</button>
+              <button data-tinvertx="on">Inverted</button>
+            </div>
+          </div>
+          <div class="row">
+            <label>Thumb Y</label>
+            <div class="btns">
+              <button data-tinverty="off">Normal</button>
+              <button data-tinverty="on" class="active">Inverted</button>
+            </div>
+          </div>
+          <p class="fineprint">
+            Normal is the mouse's convention: drag right, turn right. The
+            vertical starts inverted because that is what a thumb wants - drag
+            down and the view tips up, as though you were holding the screen.
+            The thumb controls appear when you touch the screen and go away
+            when you use the mouse, so a machine with both needs no setting for
+            it - and neither does one the browser has guessed wrong about.
+          </p>
+          <ul class="hints">
+            <li><b>The rocket is the map.</b> Every arena puts its best gun in the
+              worst place to stand. Going for it is a decision, not a detour.</li>
+            <li><b>Fire it at their feet.</b> A rocket that misses still hurts if
+              it lands where they are about to be. Aim at the floor, not the face.</li>
+            <li><b>And at your own.</b> Look down, jump, fire: it costs about
+              forty health and it puts you somewhere nobody is looking.</li>
+            <li><b>Short bursts.</b> The autogun's spread opens while you hold it
+              and closes the moment you stop. Two shots, then two more.</li>
+            <li><b>Armour is half a life.</b> It takes six tenths of everything
+              that hits you, and it is always somewhere exposed.</li>
+            <li><b>Keep moving sideways.</b> Nobody in this game has ever been hit
+              by a rail shot while strafing and jumping. Some have come close.</li>
+          </ul>
+        </details>
+
+        <details id="onlineBox">
+          <summary>Play with other people</summary>
+          <p class="fineprint">
+            Up to four. One of you opens a room and reads out the code; the rest
+            join it. Everything is simulated on every machine and only buttons
+            cross the wire, so there is no server deciding who got shot.
+          </p>
+          <div class="row">
+            <label>Room</label>
+            <div class="btns">
+              <button id="btnCreate">Open a room</button>
+              <button id="btnJoin">Join</button>
+            </div>
+          </div>
+          <div class="row">
+            <label>Code</label>
+            <input id="roomCode" maxlength="4" autocomplete="off" spellcheck="false" placeholder="ABCD">
+          </div>
+          <p id="netStatus" class="status">Not connected.</p>
+          <div id="roster" class="roster"></div>
+        </details>
+
+        <div class="panelFooter">
+          <button id="start" class="primary">FIGHT</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="pause" class="overlay hidden">
+      <div class="panel small">
+        <h2>PAUSED</h2>
+        <p class="status">Click to carry on, or Esc again.</p>
+        <button id="resume" class="primary">RESUME</button>
+        <button id="quit">BACK TO THE MENU</button>
+      </div>
+    </div>
+
+    <div id="over" class="overlay hidden">
+      <div class="panel small">
+        <h2 id="overTitle">MATCH OVER</h2>
+        <p id="overText" class="status"></p>
+        <button id="overBack" class="primary">BACK TO THE MENU</button>
+      </div>
+    </div>
+
+    <div id="loading" class="overlay hidden">
+      <div class="panel small">
+        <h2>BUILDING THE ARENA</h2>
+        <p class="status">Working out where the light falls.</p>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

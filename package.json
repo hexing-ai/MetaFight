@@ -1,0 +1,43 @@
+{
+  "name": "metafight",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Mobile-first 4v4 cargo-ship FPS built with vanilla JavaScript and WebGL; local bots, no backend.",
+  "scripts": {
+    "dev": "npm start",
+    "start": "node tools/build.mjs web release && node tools/preview.mjs",
+    "test": "npm run test:m0 && npm run test:m05 && npm run test:m1 && npm run test:m2 && npm run test:m3 && npm run test:release",
+    "build:release": "node tools/build.mjs all release",
+    "build:release:web": "node tools/build.mjs web release",
+    "test:release": "node --test tools/tests/release.test.mjs",
+    "release:source": "node tools/export-source.mjs",
+    "release:icon": "node tools/make-release-icon.mjs",
+    "test:m2": "node --test tools/tests/m2-match.test.mjs",
+    "build:m2": "node tools/build.mjs all m2",
+    "test:m1": "node --test tools/tests/m1-foundation.test.mjs tools/tests/m1-gameplay.test.mjs",
+    "build:m1": "node tools/build.mjs all m1",
+    "test:m0": "node tools/maptest.js && node tools/simtest.js && node tools/soundtest.js && node tools/pagecheck.js",
+    "test:map": "node tools/maptest.js",
+    "test:sim": "node tools/simtest.js",
+    "test:sound": "node tools/soundtest.js",
+    "test:page": "node tools/pagecheck.js",
+    "build": "node tools/build.mjs all",
+    "build:web": "node tools/build.mjs web",
+    "build:xhs": "node tools/build.mjs xiaohongshu",
+    "build:xhs:dev": "node tools/build.mjs xiaohongshu",
+    "test:m05": "node --test tools/tests/m05.test.mjs",
+    "preview": "node tools/preview.mjs",
+    "build:m3": "node tools/build.mjs all m3",
+    "test:m3": "node --test tools/tests/m3-visuals.test.mjs tools/tests/m3-experience.test.mjs tools/tests/m3-performance.test.mjs",
+    "dev:upstream": "node tools/dev-server.mjs",
+    "verify": "node tools/verify.mjs"
+  },
+  "engines": {
+    "node": ">=22 <23"
+  },
+  "devDependencies": {
+    "acorn": "8.18.0",
+    "esbuild": "0.28.2"
+  }
+}

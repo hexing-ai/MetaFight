@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>MetaFight · 货轮交锋</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div id="viewportFrame">
+  <main id="app">
+    <canvas id="screen" aria-label="三维测试场"></canvas>
+    <section id="play" class="hidden" aria-label="测试操作区">
+      <header class="hud"><span>METAFIGHT <small>货轮交锋</small></span><span id="ammo">等待开始</span><span id="matchHud">红队 0 : 0 蓝队 · 5:00</span><button id="pause">暂停</button></header>
+      <div id="reticle" aria-hidden="true">＋</div>
+      <div id="moveZone" class="move-zone"><span>移动</span><i id="stick"></i></div>
+      <div class="look-hint">右侧滑动转向</div>
+      <button id="reload" class="reload">换弹</button><button id="jump" class="jump">跳跃</button><button id="fire" class="fire">开火<span>按住并拖动可转向</span></button>
+      <div id="liveStatus" class="live-status" aria-live="polite"></div>
+    </section>
+    <section id="panel" class="panel">
+      <div class="identity"><span>METAFIGHT</span><small>M2 / 完整单局</small></div>
+      <div class="panel-body">
+        <div class="intro"><p class="eyebrow">货轮交锋 · 团队对抗</p><h1 id="heading">登上甲板。<br>准备开火。</h1><p id="message">左侧移动，右侧瞄准，按住开火。红色为友方，蓝色为敌方；玩家＋3名友方，对抗4名敌方机器人。先到50分获胜，限时5分钟。</p><p id="rotate" class="notice hidden">请横放手机。若画面仍不旋转，点“开启横向显示”。</p><p id="displayHint" class="notice hidden">手机顶部朝左横放；不玩时请点暂停。</p><button id="displayMode" class="secondary hidden">开启横向显示</button><button id="start" class="primary" disabled>正在读取设置…</button><button id="reset" class="secondary hidden">重新开始</button><button id="leave" class="secondary hidden">退出本局</button></div>
+        <div class="controls"><h2>对局设置</h2><label for="fixture">对局人数</label><select id="fixture"><option value="match">团队对抗 · 4对4</option><option value="match-12">开发候选 · 6对6</option></select><label for="sensitivity">转向灵敏度 <output id="sensitivityValue">1.0</output></label><input id="sensitivity" type="range" min="0.25" max="3" step="0.25" value="1" disabled><label for="volume">音量</label><input id="volume" type="range" min="0" max="1" step="0.05" value="0.35"><label><input id="assist" type="checkbox" checked> 瞄准减速辅助</label><button id="save" disabled>保存设置</button><button id="defaults">恢复默认</button><p id="storageStatus" class="status" aria-live="polite">正在连接本地设置</p><button id="sound" disabled>试听声音</button><p id="audioStatus" class="status">开始后启用声音，可将音量设为0静音</p><div class="links"><button id="diagnostics">查看测试记录</button><button id="license">开源许可</button></div></div>
+      </div>
+      <footer><span id="channel">正在识别运行环境</span><span id="build"></span></footer>
+    </section>
+    <section id="result" class="result hidden" aria-label="对局结算">
+      <header class="result-heading"><div><p class="eyebrow">货轮交锋 · 本局战绩</p><h1 id="resultTitle">对局结束</h1></div><strong id="resultScore"></strong></header>
+      <p id="resultSummary"></p><div id="scoreboard" class="scoreboard"></div>
+      <footer class="result-actions"><button id="again" class="primary">再来一局</button><button id="home">返回开始页</button></footer>
+    </section>
+    <section id="details" class="details hidden" aria-label="测试记录与许可">
+      <div class="details-heading"><h2 id="detailsTitle">测试记录</h2><button id="closeDetails">返回</button></div>
+      <pre id="detailsText"></pre><div class="pages"><button id="previous">上一页</button><span id="pageNumber"></span><button id="next">下一页</button></div>
+    </section>
+  </main>
+  </div>
+  <button id="recoverDisplay" class="hidden" aria-label="恢复竖向菜单">恢复显示</button>
+  <script src="./app.js"></script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+# Local official tooling; redistribution permission has not been established.
+/.codex/minitool-zip-builder/
+
+# Generated runtime artifacts and private acceptance evidence.
+/dist/
+/artifacts/
+/docs/acceptance/private/
+node_modules/
+.DS_Store
+highscores.json
+shots/
