@@ -154,7 +154,7 @@ function frame(now) {
     if (now - lastHud > 250) {
       lastHud = now;
       const me = state.bodies[0];
-      const status = !me.alive ? '复活 ' + (me.respawnIn / 60).toFixed(1) + '秒' : me.reloadUntil ? '换弹 ' + (Math.max(0, me.reloadUntil - state.tick) / 60).toFixed(1) + '秒' : me.shield ? '出生保护' : me.ammo[0] ? '备用 ∞' : '弹匣空 · 点击换弹';
+      const status = !me.alive ? '复活 ' + (me.respawnIn / 60).toFixed(1) + '秒' : me.reloadUntil ? '换弹 ' + (Math.max(0, me.reloadUntil - state.tick) / 60).toFixed(1) + '秒' : me.shield ? '出生保护' : me.ammo[0] ? '备用 ∞' : '弹匣空 · 自动换弹';
       $('ammo').textContent = 'HP ' + me.health + ' · ' + me.ammo[0] + '/30 · ' + status;
       $('liveStatus').textContent = state.bodies.length + '人 · ' + canvas.width + '×' + canvas.height + (budget.level ? ' · 已降画质' : '');
     }

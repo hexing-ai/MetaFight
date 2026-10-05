@@ -18,7 +18,7 @@ import {
   MODES, SKILLS, START_WEAPON, TICK_RATE, WARMUP_TICKS, WEAPONS, BOT_NAMES,
 } from '../constants.js';
 import { loadMap } from './maps.js';
-import { buildWorld } from './world.js';
+import { buildWorld, visible } from './world.js';
 import { buildNav } from './nav.js';
 import { createGameConfig, simulationRules } from '../metafight/config.js';
 
@@ -222,6 +222,7 @@ export function placeAtSpawn(state, body, initial = false) {
     if (teams && spawn.team >= 0 && spawn.team !== body.team) continue;
     let score = 0;
     let occupied = false;
+    let exposed = 0, nearestEnemy = Infinity;
     for (const other of state.bodies) {
       if (other === body || !other.alive) continue;
       const dx = other.x - spawn.x;
@@ -231,8 +232,17 @@ export function placeAtSpawn(state, body, initial = false) {
       if (d < 1.2) occupied = true;
       const friendly = teams && other.team === body.team;
       score += friendly ? Math.min(d, 20) * 0.15 : Math.min(d, 60);
+      if (state.productMatch && !friendly) {
+        nearestEnemy = Math.min(nearestEnemy, d);
+        if (visible(state.world, other.x, other.y + 1.62, other.z, spawn.x, spawn.y + 1.35, spawn.z)) exposed++;
+      }
     }
-    if (occupied) score -= 500;
+    if (state.productMatch) {
+      // Prefer screened positions, then distance; never move a spawn or geometry.
+      score -= exposed * 600;
+      if (nearestEnemy < 8) score -= (8 - nearestEnemy) * 100;
+    }
+    if (occupied) score -= state.productMatch ? 100000 : 500;
     // A spread of a few metres between equals, decided by the shared generator
     // so that every machine picks the same corner.
     score += nextSpawnJitter(state) * 12;
@@ -251,6 +261,7 @@ export function placeAtSpawn(state, body, initial = false) {
   body.armour = 0;
   body.shield = state.product ? state.rules.protectionTicks : initial ? 0 : 90;
   body.reloadUntil = 0;
+  body.lastBotShotAt = null; body.lastBotShooter = -1;
   body.lifeId = (body.lifeId || 0) + 1;
   body.prevMask = 0;
   body.respawnIn = 0;

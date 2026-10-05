@@ -7,6 +7,7 @@ import { SimulationClock } from './simulation-clock.js';
 import { aimSlowdown } from './practice.js';
 import { createCombatMatch, stepCombatMatch } from './match.js';
 import { DEFAULTS } from './platform/settings.js';
+import { GAME_DEFAULTS } from './config.js';
 import { ProbeInput } from './probe-input.js';
 import { createSettings } from './platform/settings.js';
 import { drawingSize, FrameBudget, trackGPU } from './runtime.js';
@@ -118,7 +119,7 @@ function newProbe() {
     $('markers').textContent = '';
     markers = state.bodies.map(b => {
       const node = document.createElement('span'); node.className = 'actor-marker team-' + b.team;
-      node.textContent = b.team ? '▼ 敌' : '◆ 友'; node.hidden = true; $('markers').appendChild(node); return node;
+      node.textContent = b.team ? '▼ 敌方' : '◆ 队友'; node.hidden = true; $('markers').appendChild(node); return node;
     });
   }
 }
@@ -196,7 +197,7 @@ function frame(now) {
         if (event.type === 'hurt' && event.body === 0) damageUntil = now + 220;
       }
       if(visual) for(const sound of feedback.consume(state,state.events)) cue(sound);
-      if (budget.scale === 1 && !reducedMotion) renderer.addEvents(state, state.events, 0);
+      if (budget.scale === 1 && !reducedMotion) renderer.addEvents(state, state.events, 0, { quality: budget.effectiveQuality });
       if (renderer.effects.length > 16) renderer.effects.splice(0, renderer.effects.length - 16);
       if (soundEnabled && audio.ctx && audio.ctx.state === 'running') {
         audio.setListener(me.x, me.y + 1.6, me.z, cosA(input.yaw), sinA(input.yaw));
@@ -212,20 +213,21 @@ function frame(now) {
     $('reticle').classList.toggle('hit', now < hitUntil);
     play.classList.toggle('hurt', now < damageUntil);
     renderer.step(dt); gpu.begin();
-    renderer.draw(state, { index: 0, dt, alpha: clock.alpha, yaw: input.yaw, pitch: input.pitch });
+    renderer.draw(state, { index: 0, dt, alpha: clock.alpha, yaw: input.yaw, pitch: input.pitch, reducedMotion });
     gpu.end();
     if (visual) {
       renderFeedback();
       for (const body of state.bodies) {
         const node = markers[body.index], p = actorMarker(state, body, renderer.viewProj, viewport.width, viewport.height, renderer.cameraEye);
         node.hidden = !p;
+        if (p) { node.classList.toggle('target-hit',feedback.view(state,input.yaw).hit && body.index === feedback.lastVictim); node.style.opacity = p.opacity; }
         if (p) node.style.transform = 'translate(' + p.x.toFixed(1) + 'px,' + p.y.toFixed(1) + 'px) translate(-50%,-100%)';
       }
     }
     if (now - lastHud > 250) {
       lastHud = now;
       const me = state.bodies[0];
-      const status = !me.alive ? '复活 ' + (me.respawnIn / 60).toFixed(1) + '秒 · ' + (me.nemesis >= 0 ? state.bodies[me.nemesis].name + '击败了你' : '意外阵亡') : me.reloadUntil ? '换弹 ' + (Math.max(0, me.reloadUntil - state.tick) / 60).toFixed(1) + '秒' : me.shield ? '出生保护' : me.ammo[0] ? me.health <= 25 ? '低生命 · 寻找掩体' : '备用 ∞' : '弹匣空 · 点击换弹';
+      const status = !me.alive ? '复活 ' + (me.respawnIn / 60).toFixed(1) + '秒 · ' + (me.nemesis >= 0 ? state.bodies[me.nemesis].name + '击败了你' : '意外阵亡') : me.reloadUntil ? '换弹 ' + (Math.max(0, me.reloadUntil - state.tick) / 60).toFixed(1) + '秒' : me.shield ? '出生保护' : me.ammo[0] ? me.health <= 25 ? '低生命 · 寻找掩体' : '备用 ∞' : '弹匣空 · 自动换弹';
       $('matchHud').textContent = '红队 ' + state.teamScore[0] + ' : ' + state.teamScore[1] + ' 蓝队 · ' + timeText(state.clock);
       $('ammo').textContent = 'HP ' + me.health + ' · ' + me.ammo[0] + '/30 · ' + status;
       $('liveStatus').textContent = state.bodies.length + '人 · ' + canvas.width + '×' + canvas.height + (budget.level ? ' · 已降画质' : '');
@@ -404,7 +406,7 @@ $('defaults').addEventListener('click', () => {
 
 function cue(kind) {
   if(!soundEnabled || !audio.ctx || audio.ctx.state!=='running') return;
-  const notes={kill:[950,.12],reload:[320,.06],'reload-complete':[640,.08],empty:[130,.05]};
+  const notes={hit:[740,.035],headshot:[1150,.06],kill:[950,.12],reload:[320,.06],'reload-complete':[640,.08],empty:[130,.05]};
   const note=notes[kind];
   if(note) try { audio.blip({gain:.2,pan:0},note[0],note[1]); } catch { soundEnabled=false; }
 }
@@ -421,7 +423,11 @@ function renderFeedback() {
   const view=feedback.view(state,input.yaw);
   $('reticle').classList.toggle('hit',view.hit);
   $('reticle').classList.toggle('kill',view.kill);
-  $('combatNotice').textContent=view.kill?'击败 '+view.victim:view.hit?'命中':'';
+  $('reticle').classList.toggle('shot',view.fire&&!reducedMotion);
+  $('reticle').classList.toggle('headshot',view.hit&&view.headshot);
+  play.classList.toggle('low-health',state.bodies[0].alive&&state.bodies[0].health<=25);
+  $('combatNotice').textContent=view.kill?'击败 '+view.victim:view.hit?(view.headshot?'头部命中':'命中确认'):'';
+  $('dangerNotice').textContent=!state.bodies[0].alive?'':view.hurt?(view.direction?view.direction+'受击':'受到伤害')+' · 寻找掩体':state.bodies[0].health<=25?'生命偏低 · 退回掩体':view.status==='protected'?'出生保护中 · 开火后解除':'';
   $('damageDirection').classList.toggle('hidden',!view.hurt||view.angle===null);
   if(view.angle!==null) $('damageDirection').style.transform='rotate('+view.angle+'rad)';
   $('weaponStatus').setAttribute('data-state',view.status);
@@ -507,7 +513,7 @@ function details(mode) {
   show('details', true); renderPage();
 }
 function publicDiagnostic() {
-  return { version: __RELEASE_META__.version, buildId, channel, configVersion: 'metafight-v2-gentle',
+  return { version: __RELEASE_META__.version, buildId, channel, configVersion: GAME_DEFAULTS.configVersion,
     state: lastError ? 'ERROR' : state && state.result ? 'RESULT' : !state ? 'MENU' : !running ? 'PAUSED' : state.bodies[0].alive ? 'PLAYING' : 'RESPAWNING',
     quality: budget.effectiveQuality, lastError: lastError || '无已记录错误' };
 }
@@ -521,7 +527,7 @@ function configurePerformance() {
 }
 function performanceReport() {
   return { buildId, channel, hostVersion: settings && settings.buildVersion,
-    mapVersion: state ? state.product.mapVersion : 'cargo-greybox-v2', configVersion: state ? state.product.configVersion : 'metafight-v2-gentle',
+    mapVersion: state ? state.product.mapVersion : GAME_DEFAULTS.mapVersion, configVersion: state ? state.product.configVersion : GAME_DEFAULTS.configVersion,
     startup: { scriptToSettingsReadyMs: readyMs, note: 'Script evaluation to settings ready only; not network cold start or visible-input latency.' },
     run: performanceRun.snapshot(performance.now()) };
 }

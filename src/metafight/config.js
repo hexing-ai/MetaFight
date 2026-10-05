@@ -3,7 +3,7 @@ import { RUN_SPEED, P_RADIUS, P_HEIGHT, P_EYE, PITCH_LIMIT, YAW_UNITS, WEAPONS }
 // Product contracts for M1. The M0.5 probe deliberately keeps its old rules.
 // Only candidate population/fixture and seed may vary; public rules stay fixed.
 export const GAME_DEFAULTS = Object.freeze({
-  schemaVersion: 1, configVersion: 'metafight-v2-gentle', mapVersion: 'cargo-greybox-v2',
+  schemaVersion: 1, configVersion: 'metafight-v3-readable-combat', mapVersion: 'cargo-greybox-v2',
   mode: 'tdm', fixture: 'match', teamSize: 4, seed: 20261001,
   scoreLimit: 50, timeLimitSec: 300, fixedHz: 60,
   maxHp: 100, magazineSize: 30, reserveAmmo: 'unlimited',
@@ -13,6 +13,7 @@ export const GAME_DEFAULTS = Object.freeze({
   botReactionMinSec: 0.8, botReactionMaxSec: 1.2,
   botBurstShots: 3, botBurstPauseMinSec: 0.7, botBurstPauseMaxSec: 1,
   botAimYawErrorDeg: 3.5, botAimPitchErrorDeg: 1.5,
+  botFlankWarningSec: 0.65, botCrossfireGapSec: 0.35,
   // Inherited values remain tuning candidates, not validated mobile feel.
   moveSpeed: RUN_SPEED, radius: P_RADIUS, height: P_HEIGHT, eyeHeight: P_EYE,
   pitchLimit: PITCH_LIMIT, yawUnits: YAW_UNITS, range: WEAPONS[0].range,

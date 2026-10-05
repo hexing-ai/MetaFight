@@ -72,15 +72,50 @@ test('600RPM, 30-round magazine, no empty-shot events, exact two-second reload',
   assert.equal(ticks.length, 30);
   assert.ok(ticks.slice(1).every((t, i) => t - ticks[i] === 6));
   assert.equal(s.bodies[0].ammo[0], 0);
-  step(s, [{ b: BTN.RELOAD }]); const end = s.bodies[0].reloadUntil;
+  const end = s.bodies[0].reloadUntil;
+  assert.equal(end, ticks[29] + 120, 'last shot starts automatic reload immediately');
   while (s.tick < end - 1) { shot(s); assert.equal(s.bodies[0].ammo[0], 0); }
   idle(s, 1); assert.equal(s.bodies[0].ammo[0], 30);
   step(s, [{ b: BTN.RELOAD }]); assert.equal(s.bodies[0].reloadUntil, 0);
 });
 
+test('held fire cycles multiple magazines with one automatic reload per magazine', () => {
+  const s = fixture(), me = s.bodies[0], shots = [], reloads = [], completed = [];
+  s.bodies[1].z = 10;
+  for (let i = 0; i < 600; i++) {
+    shot(s);
+    for (const e of s.events.filter(e => e.body === 0)) {
+      if (e.type === 'fire') shots.push(s.tick);
+      if (e.type === 'reload') reloads.push(s.tick);
+      if (e.type === 'reload-complete') completed.push(s.tick);
+    }
+    assert.ok(me.ammo[0] >= 0 && me.ammo[0] <= 30);
+  }
+  assert.ok(shots.length > 60, 'held fire resumes after both reloads');
+  assert.deepEqual(reloads, [shots[29], shots[59]]);
+  assert.deepEqual(completed, reloads.map(t => t + 120));
+  shots.slice(1).forEach((t, i) => assert.equal(t - shots[i], (i + 1) % 30 === 0 ? 120 : 6));
+});
+
+test('automatic reload finishes without firing; repeated reload input cannot extend it; manual top-up remains available', () => {
+  const s = fixture(), me = s.bodies[0]; me.ammo[0] = 1;
+  shot(s); const end = me.reloadUntil;
+  assert.equal(end, s.tick + 120);
+  while (s.tick < end - 1) {
+    step(s, [{ b: s.tick % 2 ? BTN.RELOAD : 0 }]);
+    assert.equal(me.reloadUntil, end);
+    assert.equal(me.ammo[0], 0);
+    assert.equal(s.events.some(e => e.body === 0 && ['fire', 'reload'].includes(e.type)), false);
+  }
+  idle(s, 1); assert.equal(me.ammo[0], 30); assert.equal(me.reloadUntil, 0);
+  assert.equal(s.events.some(e => e.type === 'fire' && e.body === 0), false);
+  shot(s); step(s, [{ b: BTN.RELOAD }]);
+  assert.equal(me.ammo[0], 29); assert.equal(me.reloadUntil, s.tick + 120);
+});
+
 test('death cancels reload; respawn is 180 ticks, full magazine and protected for 120 ticks', () => {
   const s = fixture(), me = s.bodies[0];
-  shot(s); step(s, [{ b: BTN.RELOAD }]); assert.ok(me.reloadUntil);
+  me.ammo[0] = 1; shot(s); assert.ok(me.reloadUntil);
   hurt(s, me, 1000, -1, 'void'); assert.equal(me.reloadUntil, 0);
   const score = [...s.teamScore]; idle(s, 179); assert.equal(me.alive, false);
   idle(s, 1); assert.equal(me.alive, true); assert.equal(me.ammo[0], 30); assert.equal(me.health, 100);
@@ -93,7 +128,7 @@ test('death cancels reload; respawn is 180 ticks, full magazine and protected fo
 
 test('pause freezes live reload and no match limits end the development practice', () => {
   const s = fixture(), c = new SimulationClock();
-  shot(s); step(s, [{ b: BTN.RELOAD }]); const remaining = s.bodies[0].reloadUntil - s.tick;
+  s.bodies[0].ammo[0] = 1; shot(s); const remaining = s.bodies[0].reloadUntil - s.tick;
   c.advance(60000, () => stepPractice(s, { b: 0 }));
   assert.equal(s.bodies[0].reloadUntil - s.tick, remaining);
   s.clock = 1; s.teamScore[0] = 999; idle(s, 3); assert.equal(s.phase, 'live');

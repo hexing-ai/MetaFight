@@ -14,6 +14,7 @@
  * about the match changes.
  */
 
+import { combatEffects, limitCombatEffects } from '../metafight/visuals/effects.js';
 import {
   FLASH_TICKS, MAX_BODIES, P_EYE, P_HEIGHT, P_RADIUS, TEAMS, TICK_RATE, TRAIL_TICKS, WEAPONS,
 } from '../constants.js';
@@ -314,7 +315,12 @@ export class Renderer {
    * about the match. Which is why it can be dropped on a slow frame, and why the
    * simulation never asks what happened to it.
    */
-  addEvents(state, events, localIndex) {
+  addEvents(state, events, localIndex, options = {}) {
+    if (state.product && this.teamMeshes) {
+      for (const e of events) if (e.type === 'fire' && e.body === localIndex) this.kick = Math.min(1.2, this.kick + .52);
+      this.effects = limitCombatEffects(this.effects.concat(combatEffects(events, localIndex, options.quality)), options.quality);
+      return;
+    }
     for (const e of events) {
       if (e.type === 'fire') {
         const weapon = WEAPONS[e.weapon];
@@ -424,7 +430,7 @@ export class Renderer {
 
     const speed = Math.sqrt(body.vx * body.vx + body.vz * body.vz);
     this.bob += opts.dt * (2.0 + speed * 1.15);
-    const bobAmount = body.onGround ? Math.min(1, speed / 9) * 0.055 : 0;
+    const bobAmount = body.onGround && !opts.reducedMotion ? Math.min(1, speed / 9) * 0.055 : 0;
     const eyeX = lerpTo(body.px, body.x, this.alpha);
     const eyeY = this.eyeY + Math.sin(this.bob * 2) * bobAmount
       + (dead ? -1.0 : 0);
@@ -432,7 +438,7 @@ export class Renderer {
     this.cameraEye = { x: eyeX, y: eyeY, z: eyeZ };
 
     const yaw = toRadians(opts.yaw);
-    const pitch = toRadians(opts.pitch) + this.kick * 0.06;
+    const pitch = toRadians(opts.pitch) + (state.product || opts.reducedMotion ? 0 : this.kick * 0.06);
     const cp = Math.cos(pitch);
     const dx = Math.cos(yaw) * cp;
     const dy = Math.sin(pitch);
@@ -819,11 +825,13 @@ export class Renderer {
     gl.uniform3f(uniforms.uTint, 1, 1, 1);
 
     const speed = Math.sqrt(body.vx * body.vx + body.vz * body.vz);
-    const sway = Math.sin(this.bob) * Math.min(1, speed / 9) * 0.035;
-    const swayY = Math.abs(Math.cos(this.bob)) * Math.min(1, speed / 9) * 0.03;
-    const back = this.kick * 0.13;
-    const reloadDip = this.teamMeshes && body.reloadUntil ? Math.sin(Math.PI*Math.max(0,Math.min(1,(body.reloadUntil-state.tick)/120))) : 0;
-    const drop = this.kick * 0.045 + reloadDip*.12;
+    const motion = opts.reducedMotion ? 0 : 1;
+    const recoil = this.kick * motion;
+    const sway = motion * Math.sin(this.bob) * Math.min(1, speed / 9) * 0.035;
+    const swayY = motion * Math.abs(Math.cos(this.bob)) * Math.min(1, speed / 9) * 0.03;
+    const back = recoil * (this.teamMeshes ? .18 : .13);
+    const reloadDip = motion && this.teamMeshes && body.reloadUntil ? Math.sin(Math.PI*Math.max(0,Math.min(1,(body.reloadUntil-state.tick)/120))) : 0;
+    const drop = recoil * 0.045 + reloadDip*.12;
 
     // Right, up and forward from the camera, so the gun hangs off the view.
     const rx = this.view[0];
@@ -843,7 +851,7 @@ export class Renderer {
     // is and then pitched by hand.
     const yaw = Math.atan2(dz, dx);
     const pitch = Math.asin(Math.max(-1, Math.min(1, dy)));
-    viewModelTransform(this.modelM, px, py, pz, yaw + (this.teamMeshes ? -.08 : 0), pitch - this.kick * 0.22 - reloadDip*.40, this.viewScale);
+    viewModelTransform(this.modelM, px, py, pz, yaw + (this.teamMeshes ? -.08 : 0), pitch - recoil * (this.teamMeshes ? .30 : .22) - reloadDip*.40, this.viewScale);
     gl.uniformMatrix4fv(uniforms.uModel, false, this.modelM);
     gl.drawElements(gl.TRIANGLES, mesh.count, gl.UNSIGNED_SHORT, 0);
   }

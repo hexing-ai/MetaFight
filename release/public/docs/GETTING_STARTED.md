@@ -33,3 +33,8 @@
 - `npm run build:release:web`：当前公众网页版。
 
 独立部署只需 `dist/release/web/` 全部文件，不能只上传 index.html。支持静态项目子路径，不需要服务器端路由或数据库。详见 [发布说明](../RELEASING.md)。
+
+
+## 在同一 Wi-Fi 下用手机试玩
+
+运行 `npm start -- --lan --port 4187`，然后用手机浏览器打开终端打印的局域网地址。手机和电脑需连接同一Wi-Fi，电脑保持唤醒。该预览仅提供构建后的游戏文件；停止服务按Ctrl+C。

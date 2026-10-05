@@ -304,13 +304,19 @@ function weapons(state, body, mask) {
       body.ammo[0] = state.product.magazineSize; body.reloadUntil = 0;
       state.events.push({ type: 'reload-complete', body: body.index });
     }
-    // RELOAD uses its own bit; a held button cannot restart a finished reload.
-    if ((mask & BTN.RELOAD) && !(body.prevMask & BTN.RELOAD) && body.ammo[0] < state.product.magazineSize) {
-      body.reloadUntil = state.tick + state.rules.reloadTicks;
-      state.events.push({ type: 'reload', body: body.index }); return;
+    // Empty magazines reload without input. Manual reload still allows topping up;
+    // its rising edge cannot restart an automatic reload while held.
+    if (body.ammo[0] <= 0 || ((mask & BTN.RELOAD) && !(body.prevMask & BTN.RELOAD) && body.ammo[0] < state.product.magazineSize)) {
+      startProductReload(state, body); return;
     }
     if (!(mask & BTN.FIRE) || body.cooldown > 0 || body.ammo[0] <= 0) return;
     fire(state, body, state.rifle);
+    if (state.productMatch && !body.human && body.combat) {
+      const target = state.bodies[body.combat.target];
+      if (target) { target.lastBotShotAt = state.tick; target.lastBotShooter = body.index; }
+    }
+    // Start on the last shot, even when the trigger is released on the next tick.
+    if (body.ammo[0] === 0) startProductReload(state, body);
     return;
   }
 
@@ -334,6 +340,11 @@ function weapons(state, body, mask) {
     return;
   }
   fire(state, body, weapon);
+}
+
+function startProductReload(state, body) {
+  body.reloadUntil = state.tick + state.rules.reloadTicks;
+  state.events.push({ type: 'reload', body: body.index });
 }
 
 function switchWeapon(state, body, mask) {

@@ -260,3 +260,26 @@ button:focus:not(:focus-visible) { outline:none; }
 #app:not(.portrait) .cover>footer { left:auto; right:16px; }
 @media (max-height:350px) and (orientation:landscape) { #app .cover #heading {top:65px} #app .cover .eyebrow {display:none} #app .cover #heading em {font-size:36px} }
 .details { z-index:11; }
+
+/* Combat readability: keep the centre clear; warnings stay close to the action. */
+.actor-marker { padding:3px 7px; border:1px solid currentColor; font-size:12px; background:rgba(10,26,35,.86); }
+.actor-marker.target-hit { color:#ffe3a0; border-color:#ffe3a0; }
+#reticle { transition:width 70ms ease-out,height 70ms ease-out; }
+#reticle.shot { width:26px; height:26px; }
+#reticle i:nth-child(1),#reticle i:nth-child(2) { left:calc(50% - 1px); }
+#reticle i:nth-child(3),#reticle i:nth-child(4) { top:calc(50% - 1px); }
+#reticle.hit::after { content:"×"; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); font:bold 30px/1 sans-serif; color:#ffe3a0; text-shadow:0 1px 3px #0d2634; }
+#reticle.headshot::after { color:#ffb06b; }
+#reticle.kill::after { content:"×"; color:#fff1c9; font-size:36px; }
+.combat-notice { top:calc(50% + 34px); font-size:13px; padding:4px 10px; background:rgba(10,26,35,.7); border-radius:3px; }
+.combat-notice:empty,.danger-notice:empty { display:none; }
+.damage-direction { width:164px; height:164px; margin:-82px 0 0 -82px; font-size:25px; color:#ffb06b; }
+.damage-direction span { margin:0 auto; width:70px; border-top:4px solid #ffb06b; border-radius:50%; text-shadow:0 1px 3px #102831; }
+.danger-notice { position:absolute; top:82px; left:50%; transform:translateX(-50%); padding:5px 12px; color:#ffe2bd; background:rgba(46,28,18,.82); border-left:3px solid #ffb06b; font:600 12px/1.4 sans-serif; white-space:nowrap; pointer-events:none; }
+#play.low-health { box-shadow:inset 0 0 36px rgba(183,65,43,.3); }
+#play.low-health.hurt { box-shadow:inset 0 0 38px rgba(205,82,46,.48); }
+.health-readout.danger { border:1px solid #ffa176; background:rgba(62,28,20,.86); }
+@media (prefers-reduced-motion:reduce) {
+  #reticle { transition:none; }
+  #play.low-health,#play.low-health.hurt { box-shadow:none; }
+}

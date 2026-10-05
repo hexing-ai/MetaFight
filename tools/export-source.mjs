@@ -1,10 +1,13 @@
 // Export a new, history-free source tree. Never push the internal working tree.
-import { readFileSync, writeFileSync, mkdirSync, rmSync, lstatSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, rmSync, lstatSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { filesIn } from './artifact-audit.mjs';
 import { zipFiles } from './zip.mjs';
-const output='artifacts/public-source';
+const output=process.env.METAFIGHT_SOURCE_OUTPUT || 'artifacts/public-source';
+if (existsSync(path.join(output, '.git'))) throw new Error('Refusing to replace a Git checkout; set METAFIGHT_SOURCE_OUTPUT to a separate export directory.');
+const version=JSON.parse(readFileSync('release/config.json')).version;
+const archivePath='artifacts/MetaFight-source-'+version+'.zip';
 const roots=['src','dev','server','icons'];
 const explicit=['index.html','styles.css','manifest.webmanifest','LICENSE','.nvmrc','.gitignore','package.json','package-lock.json',
   'release/config.json','release/icon.png','release/icon.svg',
@@ -25,6 +28,6 @@ rmSync(output,{recursive:true,force:true});mkdirSync(output,{recursive:true});
 const sha=data=>createHash('sha256').update(data).digest('hex');
 for(const [file,data] of entries) { mkdirSync(path.dirname(output+'/'+file),{recursive:true});writeFileSync(output+'/'+file,data); }
 const archive=zipFiles(entries);
-writeFileSync('artifacts/MetaFight-source-0.1.0.zip',archive);
-writeFileSync('artifacts/public-source-manifest.json',JSON.stringify({published:false,repository:JSON.parse(readFileSync('release/config.json')).repository,zip:{path:'artifacts/MetaFight-source-0.1.0.zip',bytes:archive.length,sha256:sha(archive)},files:entries.map(([file,data])=>({file,bytes:data.length,sha256:sha(data)}))},null,2)+'\n');
+writeFileSync(archivePath,archive);
+writeFileSync('artifacts/public-source-manifest.json',JSON.stringify({published:false,repository:JSON.parse(readFileSync('release/config.json')).repository,zip:{path:archivePath,bytes:archive.length,sha256:sha(archive)},files:entries.map(([file,data])=>({file,bytes:data.length,sha256:sha(data)}))},null,2)+'\n');
 console.log(JSON.stringify({output,files:entries.length,bytes:archive.length,sha256:sha(archive),published:false}));

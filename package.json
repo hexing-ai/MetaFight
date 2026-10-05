@@ -1,6 +1,6 @@
 {
   "name": "metafight",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "type": "module",
   "description": "Mobile-first 4v4 cargo-ship FPS built with vanilla JavaScript and WebGL; local bots, no backend.",

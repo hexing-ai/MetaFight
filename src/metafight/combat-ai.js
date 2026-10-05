@@ -33,16 +33,21 @@ export function combatInput(state, body) {
   }
   let target = null, best = Infinity;
   for (const other of state.bodies) {
-    if (other.team === body.team || !other.alive) continue;
+    if (other.team === body.team || !other.alive || other.shield > 0) continue;
     const distance = Math.hypot(other.x - body.x, other.z - body.z);
     if (distance >= Math.min(best, SIGHT)) continue;
     if (!visible(state.world, body.x, body.y + P_EYE, body.z, other.x, other.y + 1.1, other.z)) continue;
     target = other; best = distance;
   }
   if (target) {
-    if (ai.target !== target.index) {
+    if (ai.target !== target.index || ai.targetLife !== target.lifeId) {
       ai.noticedAt = state.tick;
       ai.reactAt = state.tick + delay(state, config.botReactionMinSec, config.botReactionMaxSec);
+      // Give a target facing away time to react. Applies to both teams.
+      const approach = angle(body.z - target.z, body.x - target.x);
+      if (Math.abs(angleDelta(target.yaw, approach)) > YAW_UNITS * 70 / 360)
+        ai.reactAt += Math.round(config.botFlankWarningSec * config.fixedHz);
+      ai.targetLife = target.lifeId;
     }
     ai.target = target.index; ai.lastKnown = point(target); ai.memoryUntil = state.tick + 180;
     ai.mode = state.tick < ai.reactAt ? 'notice' : 'engage';
@@ -111,6 +116,11 @@ export function combatInput(state, body) {
   }
   if (node && node.y > body.y + 0.3 && body.onGround) out.b |= BTN.JUMP;
   if (!body.ammo[0]) out.b |= BTN.RELOAD;
-  else if (target && state.tick >= Math.max(ai.reactAt, ai.nextBurstAt) && Math.abs(angleDelta(wantYaw, out.yaw)) < 1100) out.b |= BTN.FIRE;
+  else if (target && canBotShoot(state, body, target) && state.tick >= Math.max(ai.reactAt, ai.nextBurstAt) && Math.abs(angleDelta(wantYaw, out.yaw)) < 1100) out.b |= BTN.FIRE;
   return out;
+}
+
+export function canBotShoot(state, body, target) {
+  return target.lastBotShooter === body.index || target.lastBotShotAt == null ||
+    state.tick - target.lastBotShotAt >= Math.round(state.product.botCrossfireGapSec * state.product.fixedHz);
 }
